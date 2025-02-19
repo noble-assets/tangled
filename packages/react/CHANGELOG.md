@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.1
+
+### Patch Changes
+
+- 4ce7d55: automated publish test
+
 ## 1.13.0
 
 ### Minor Changes

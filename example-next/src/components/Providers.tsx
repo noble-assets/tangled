@@ -27,6 +27,35 @@ const dydx: CosmosChainType = {
   },
 } as const;
 
+export const nobleTestnet: CosmosChainType = {
+  id: 'grand-1' as `${string}-${number}`,
+  chainName: 'nobletestnet',
+  name: 'Noble Testnet',
+  type: 'cosmos',
+  nativeCurrency: {
+    name: 'usdc',
+    symbol: 'usdc',
+    decimals: 6,
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.testnet.noble.xyz:443'],
+    },
+    polkachu: {
+      http: ['https://noble-testnet-rpc.polkachu.com:443'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Mintscan',
+      url: 'https://www.mintscan.io/noble-testnet',
+    },
+  },
+  extra: {
+    nativeAddress: 'uusdc',
+  },
+} as const;
+
 const queryClient = new QueryClient();
 
 export const Providers = ({ children }: { children: ReactNode }) => {
@@ -37,7 +66,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
           config={{
             projectName: 'Tangled Example',
             chains: {
-              cosmos: [dydx],
+              cosmos: [dydx, nobleTestnet],
             },
             chainConfigs: {
               solana: {

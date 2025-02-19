@@ -47,15 +47,15 @@ export const CosmosContextProvider = ({
 }) => {
   const tangledConfig = useTangledConfig((state) => state.config);
   const cosmosStore = useRef(createCosmosStore(chains)).current;
+  const autoConnectRef = useRef(true);
 
   const [, setViewWalletRepo] = useState<WalletRepo | undefined>();
   const [, setData] = useState<Data>();
   const [, setState] = useState<State>(State.Init);
   const [, setMsg] = useState<string | undefined>();
-
-  const [clientState, setClientStates] = useState<Record<string, State>>({});
   const [, setClientMsg] = useState<string | undefined>();
 
+  const [clientState, setClientStates] = useState<Record<string, State>>({});
   const [render, forceRender] = useState<number>(0);
 
   const connectedMainWallet = useStore(cosmosStore, (state) => state.connectedMainWallet);
@@ -65,25 +65,21 @@ export const CosmosContextProvider = ({
   const setWalletManager = useStore(cosmosStore, (state) => state.setWalletManager);
   const setWallets = useStore(cosmosStore, (state) => state.setWallets);
   const getChainRegistry = useStore(cosmosStore, (state) => state.getChainRegistry);
-
   const reset = useStore(cosmosStore, (state) => state.reset);
-
-  const autoConnectRef = useRef(true);
 
   const chainIds = useMemo(() => chains.map((chain) => chain.id), [chains]);
   const chainNames = useMemo(() => chains.map((chain) => chain.chainName), [chains]);
-
   const logger = useMemo(() => new Logger('ERROR'), []);
 
   const walletManager = useMemo(() => {
     const _walletManager = new WalletManager(
-      chainRegistry?.chains ? chainRegistry.chains : chainNames,
+      chainRegistry?.chains ?? chainNames,
       [keplr[0], xdefi[0], leap[0]] as MainWalletBase[],
       logger,
       false,
       true,
       [], // allowedIframeParentOrigins,
-      [], // assetLists,
+      chainRegistry?.assetLists ?? [],
       'icns', // defaultNameService,
       tangledConfig.projectId
         ? {
@@ -185,6 +181,7 @@ export const CosmosContextProvider = ({
     () => chains.map((chain) => walletManager.getWalletRepo(chain.chainName)),
     [chains, walletManager],
   );
+
   useEffect(() => {
     walletManager.onMounted();
     return () => {
@@ -196,10 +193,6 @@ export const CosmosContextProvider = ({
     setWallets([...walletManager.mainWallets]);
   }, [setWallets, walletManager.mainWallets, clientState]);
 
-  /**
-   * Get the wallet manager and set the callbacks for the wallet connect and extension wallets
-   * This is necessary to enable the wallet to connect to the Cosmos chains
-   */
   useEffect(() => {
     getChainRegistry();
     setWalletManager(walletManager);
@@ -251,10 +244,6 @@ export const CosmosContextProvider = ({
     },
   });
 
-  /**
-   * On first render, connect to the wallet if the wallet is already connected
-   * Serves as a way to persist the wallet connection across page refreshes
-   */
   useEffect(() => {
     const cosmosCurrentWallet = localStorage.getItem('cosmos-kit@2:core//current-wallet');
     if (!autoConnectRef.current || !cosmosCurrentWallet) {
