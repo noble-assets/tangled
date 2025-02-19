@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.2
+
+### Patch Changes
+
+- Updates the custom chain registry client to support testnet urls, improved the cosmos provider to ensure the testnet assets and chain information is used with the wallet manager
+
 ## 1.0.1
 
 ### Patch Changes
