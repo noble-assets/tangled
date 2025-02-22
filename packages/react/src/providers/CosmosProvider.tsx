@@ -1,4 +1,5 @@
 import { SigningCosmWasmClientOptions } from '@cosmjs/cosmwasm-stargate';
+import { Registry } from '@cosmjs/proto-signing';
 import { GasPrice } from '@cosmjs/stargate';
 import {
   ChainWalletBase,
@@ -100,6 +101,11 @@ export const CosmosContextProvider = ({
               feeTokens[0].fixed_min_gas_price?.toString() + feeTokens[0].denom.toString(),
             );
           }
+
+          const chainConfig = tangledConfig.chains!.cosmos!.find((chain) => chain.chainName === chainName)!;
+          const registry = chainConfig.extra!['registry'] as Registry;
+          console.log('registry', registry);
+          config.registry = registry;
 
           return config;
         },
