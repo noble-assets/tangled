@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.3
+
+### Patch Changes
+
+- 9b210da: add support for signing options with custom registry types in chainConfig
+
 ## 1.0.2
 
 ### Patch Changes
