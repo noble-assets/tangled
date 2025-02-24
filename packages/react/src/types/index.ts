@@ -1,3 +1,4 @@
+import { Registry } from '@cosmjs/proto-signing';
 import type { IndexedTx as CosmosIndexedTx } from '@cosmjs/stargate';
 import type { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
 import type { WalletSelector as NearWalletSelector } from '@near-wallet-selector/core';
@@ -17,7 +18,7 @@ export type ChainType = (typeof CHAIN_TYPES)[number];
 export type Chain = keyof typeof CHAIN_ID;
 export type ChainId = (typeof CHAIN_ID)[keyof typeof CHAIN_ID] | `${string}-${number}`;
 
-export interface ChainDataGeneric {
+export interface ChainDataGeneric<T = unknown> {
   type: ChainType;
   id: ChainId;
   name: string;
@@ -40,7 +41,7 @@ export interface ChainDataGeneric {
   contracts?: {
     [key: string]: string;
   };
-  extra?: Record<string, any>;
+  extra?: Record<string, T>;
 }
 
 export interface EVMChain extends ViemChain {
@@ -77,7 +78,7 @@ export interface TangledConfig {
   // Override default supported chains
   chains?: Partial<SupportedChainsByType>;
   // Override default chain configs. TODO: Add chain config type
-  chainConfigs?: Partial<Record<Chain, ChainConfig>>;
+  chainConfigs?: Partial<Record<string, ChainConfig>>;
   // Enable testnets. Defaults to false. If true, only testnet chains will be provided in the context.
   // testnet?: boolean;
 
@@ -98,7 +99,7 @@ type ChainRpcUrls = {
   webSocket?: readonly string[] | undefined;
 };
 
-export interface ChainConfig {
+export interface ChainConfig<T = unknown> {
   name: string;
   id: ChainId;
   type: ChainType;
@@ -112,6 +113,7 @@ export interface ChainConfig {
     [key: string]: ChainRpcUrls;
     default: ChainRpcUrls;
   };
+  extra?: Record<string, T extends Registry ? Registry : T>;
 }
 
 export type ConnectionOrConfig = {

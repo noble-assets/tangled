@@ -1,4 +1,5 @@
 import { SigningCosmWasmClientOptions } from '@cosmjs/cosmwasm-stargate';
+import { Registry } from '@cosmjs/proto-signing';
 import { GasPrice } from '@cosmjs/stargate';
 import {
   ChainWalletBase,
@@ -18,7 +19,7 @@ import { createContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { useTangledConfig } from '../hooks/useTangledConfig.js';
 import { CosmosStore, createCosmosStore } from '../store/Cosmos.js';
-import { CosmosChainType } from '../types/index.js';
+import { Chain, CosmosChainType } from '../types/index.js';
 import { RemoveReadonly } from '../types/utils.js';
 
 export interface CosmosContextValues {
@@ -99,6 +100,12 @@ export const CosmosContextProvider = ({
             config.gasPrice = GasPrice.fromString(
               feeTokens[0].fixed_min_gas_price?.toString() + feeTokens[0].denom.toString(),
             );
+          }
+
+          const chainConfig = tangledConfig.chainConfigs?.[chainName as Chain];
+          const registry = chainConfig?.extra?.registry;
+          if (registry instanceof Registry) {
+            config.registry = registry;
           }
 
           return config;
