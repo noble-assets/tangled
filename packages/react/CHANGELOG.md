@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.4
+
+### Patch Changes
+
+- 239b296: Set preffered sign-mode to direct for signing cosmwasm options. Fix undetected registry.
+
 ## 1.0.3
 
 ### Patch Changes
