@@ -19,7 +19,7 @@ import { createContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { useTangledConfig } from '../hooks/useTangledConfig.js';
 import { CosmosStore, createCosmosStore } from '../store/Cosmos.js';
-import { Chain, CosmosChainType } from '../types/index.js';
+import { Chain, ChainConfig, CosmosChainType } from '../types/index.js';
 import { RemoveReadonly } from '../types/utils.js';
 
 export interface CosmosContextValues {
@@ -91,6 +91,9 @@ export const CosmosContextProvider = ({
         : undefined,
       {
         // signer options
+        preferredSignType: () => {
+          return 'direct';
+        },
         signingCosmwasm: (chain) => {
           const chainName = typeof chain === 'string' ? chain : chain.chain_name;
 
@@ -102,11 +105,8 @@ export const CosmosContextProvider = ({
             );
           }
 
-          const chainConfig = tangledConfig.chainConfigs?.[chainName as Chain];
-          const registry = chainConfig?.extra?.registry;
-          if (registry instanceof Registry) {
-            config.registry = registry;
-          }
+          const chainConfig = tangledConfig.chainConfigs?.[chainName as Chain] as ChainConfig<Registry>;
+          config.registry = chainConfig?.extra?.registry;
 
           return config;
         },
