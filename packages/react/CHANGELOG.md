@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.7
+
+### Patch Changes
+
+- switch to amino signer on keplr for ledger connections
+
 ## 1.0.6
 
 ### Patch Changes
