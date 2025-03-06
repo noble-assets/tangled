@@ -100,8 +100,8 @@ type ChainRpcUrls = {
 };
 
 type Extra<T> = {
-  registry: Registry;
-  aminoTypes: AminoTypes;
+  registry?: Registry;
+  aminoTypes?: AminoTypes;
   preferredSignType?: 'amino' | 'direct';
 } & {
   [K in Exclude<string, 'registry' | 'aminoTypes'>]: T;
