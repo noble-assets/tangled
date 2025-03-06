@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.6
+
+### Patch Changes
+
+- make types values optional
+
 ## 1.0.5
 
 ### Patch Changes
