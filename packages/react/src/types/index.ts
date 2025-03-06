@@ -1,5 +1,5 @@
 import { Registry } from '@cosmjs/proto-signing';
-import type { IndexedTx as CosmosIndexedTx } from '@cosmjs/stargate';
+import type { AminoTypes, IndexedTx as CosmosIndexedTx } from '@cosmjs/stargate';
 import type { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
 import type { WalletSelector as NearWalletSelector } from '@near-wallet-selector/core';
 import type { Connection as SolanaConnection } from '@solana/web3.js';
@@ -99,6 +99,14 @@ type ChainRpcUrls = {
   webSocket?: readonly string[] | undefined;
 };
 
+type Extra<T> = {
+  registry: Registry;
+  aminoTypes: AminoTypes;
+  preferredSignType?: 'amino' | 'direct';
+} & {
+  [K in Exclude<string, 'registry' | 'aminoTypes'>]: T;
+};
+
 export interface ChainConfig<T = unknown> {
   name: string;
   id: ChainId;
@@ -113,7 +121,7 @@ export interface ChainConfig<T = unknown> {
     [key: string]: ChainRpcUrls;
     default: ChainRpcUrls;
   };
-  extra?: Record<string, T extends Registry ? Registry : T>;
+  extra?: Extra<T>;
 }
 
 export type ConnectionOrConfig = {

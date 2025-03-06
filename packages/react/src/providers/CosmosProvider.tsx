@@ -1,5 +1,4 @@
 import { SigningCosmWasmClientOptions } from '@cosmjs/cosmwasm-stargate';
-import { Registry } from '@cosmjs/proto-signing';
 import { GasPrice } from '@cosmjs/stargate';
 import {
   ChainWalletBase,
@@ -15,11 +14,11 @@ import { wallets as keplr } from '@cosmos-kit/keplr';
 import { wallets as leap } from '@cosmos-kit/leap';
 import { wallets as xdefi } from '@cosmos-kit/xdefi';
 import { useMutation } from '@tanstack/react-query';
-import { createContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { useTangledConfig } from '../hooks/useTangledConfig.js';
 import { CosmosStore, createCosmosStore } from '../store/Cosmos.js';
-import { Chain, ChainConfig, CosmosChainType } from '../types/index.js';
+import { Chain, CosmosChainType } from '../types/index.js';
 import { RemoveReadonly } from '../types/utils.js';
 
 export interface CosmosContextValues {
@@ -72,6 +71,11 @@ export const CosmosContextProvider = ({
   const chainNames = useMemo(() => chains.map((chain) => chain.chainName), [chains]);
   const logger = useMemo(() => new Logger('ERROR'), []);
 
+  const getChainConfig = useCallback(
+    (chainName: Chain) => tangledConfig.chainConfigs?.[chainName],
+    [tangledConfig.chainConfigs],
+  );
+
   const walletManager = useMemo(() => {
     const _walletManager = new WalletManager(
       chainRegistry?.chains ?? chainNames,
@@ -91,7 +95,12 @@ export const CosmosContextProvider = ({
         : undefined,
       {
         // signer options
-        preferredSignType: () => {
+        preferredSignType: (chain) => {
+          const chainName = typeof chain === 'string' ? chain : chain.chain_name;
+          const chainConfig = getChainConfig(chainName as Chain);
+          if (chainConfig?.extra?.preferredSignType) {
+            return chainConfig.extra.preferredSignType;
+          }
           return 'direct';
         },
         signingCosmwasm: (chain) => {
@@ -105,8 +114,9 @@ export const CosmosContextProvider = ({
             );
           }
 
-          const chainConfig = tangledConfig.chainConfigs?.[chainName as Chain] as ChainConfig<Registry>;
+          const chainConfig = getChainConfig(chainName as Chain);
           config.registry = chainConfig?.extra?.registry;
+          config.aminoTypes = chainConfig?.extra?.aminoTypes;
 
           return config;
         },
