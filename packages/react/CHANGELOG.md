@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.5
+
+### Patch Changes
+
+- "feat: support user defined sign mode
+
 ## 1.0.4
 
 ### Patch Changes
