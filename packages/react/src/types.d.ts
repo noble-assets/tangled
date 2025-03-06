@@ -6,5 +6,10 @@ export declare global {
       bitcoin: XfiBitcoinConnector;
       ethereum: any;
     };
+    keplr?: {
+      getKey(chainId: string): Promise<{
+        isNanoLedger: boolean;
+      }>;
+    };
   }
 }
