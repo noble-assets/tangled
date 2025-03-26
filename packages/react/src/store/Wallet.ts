@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
-import { CHAIN_TYPES } from '../types/index.js';
+import { CHAIN_TYPES, ChainType } from '../types/index.js';
 import { ConnectedAccount, ConnectedAccountsByChain, CurrentWallet, WalletsByChain } from '../types/wallet.js';
 
 interface WalletState {
   currentWallet: CurrentWallet | undefined;
   currentAccount: ConnectedAccount | undefined;
+  currentAccountForChainType: Partial<Record<ChainType, ConnectedAccount>>;
   recentWallet: CurrentWallet | undefined;
 
   connectedWalletsByChain: WalletsByChain;
@@ -13,6 +14,7 @@ interface WalletState {
 
   setCurrentWallet: (wallet: CurrentWallet | undefined) => void;
   setCurrentAccount: (account: ConnectedAccount | undefined) => void;
+  setCurrentAccountForChainType: (type: ChainType, account: ConnectedAccount | undefined) => void;
 
   setRecentWallet: (wallet: CurrentWallet | undefined) => void;
 
@@ -28,6 +30,7 @@ export const useWalletsStore = create<WalletState>()(
       (set) => ({
         currentWallet: undefined,
         currentAccount: undefined,
+        currentAccountForChainType: {},
         recentWallet: undefined,
 
         connectedWalletsByChain: CHAIN_TYPES.reduce((acc, chain) => ({ ...acc, [chain]: {} }), {}) as WalletsByChain,
@@ -39,6 +42,8 @@ export const useWalletsStore = create<WalletState>()(
 
         setCurrentWallet: (wallet) => set(() => ({ currentWallet: wallet })),
         setCurrentAccount: (account) => set(() => ({ currentAccount: account })),
+        setCurrentAccountForChainType: (type, account) =>
+          set((state) => ({ currentAccountForChainType: { ...state.currentAccountForChainType, [type]: account } })),
         setRecentWallet: (wallet) => set(() => ({ recentWallet: wallet })),
 
         setConnectedWallets: (chainWallets) =>
@@ -54,6 +59,7 @@ export const useWalletsStore = create<WalletState>()(
         partialize: (state) => ({
           currentWallet: state.currentWallet,
           currentAccount: state.currentAccount,
+          currentAccountForChainType: state.currentAccountForChainType,
           recentWallet: state.recentWallet,
         }),
       },

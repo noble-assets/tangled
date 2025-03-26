@@ -3,6 +3,7 @@ import {
   useChain,
   useChains,
   useCurrentAccount,
+  useCurrentAccountForChainType,
   useCurrentWallet,
   useNetwork,
   useWallet,
@@ -34,6 +35,9 @@ export default Example;
 
 const CurrentAccountAndWallet = () => {
   const currentAccount = useCurrentAccount();
+  const currEvmAcc = useCurrentAccountForChainType('evm');
+  const currCosmosAcc = useCurrentAccountForChainType('cosmos');
+
   const currentWallet = useCurrentWallet();
   const chain = useChain(currentAccount?.chainId);
   const wallet = useWallet(currentAccount?.chainType, currentAccount?.wallet);
@@ -62,6 +66,12 @@ const CurrentAccountAndWallet = () => {
   return (
     <div className='grid grid-cols-2'>
       <div>
+        <div>
+          <span>Current EVM Account</span>
+          <pre>{currEvmAcc && JSON.stringify(currEvmAcc, null, 2)}</pre>
+          <span>Current Cosmos Account</span>
+          <pre>{currCosmosAcc && JSON.stringify(currCosmosAcc, null, 2)}</pre>
+        </div>
         <h3 className='text-lg font-bold'>Current Account</h3>
         <table className='w-full'>
           <thead>

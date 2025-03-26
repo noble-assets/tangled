@@ -11,7 +11,7 @@ import { useNearContext } from '../hooks/useNearContext.js';
 import { useNearStore } from '../hooks/useNearStore.js';
 import { useTangledConfig } from '../hooks/useTangledConfig.js';
 import { useWalletsStore } from '../store/Wallet.js';
-import { ChainId } from '../types/index.js';
+import { CHAIN_TYPES, ChainId } from '../types/index.js';
 import { ConnectedAccount, ConnectedWallet } from '../types/wallet.js';
 
 export const WalletsProvider = ({ children }: { children: ReactNode }) => {
@@ -36,6 +36,7 @@ export const WalletsProvider = ({ children }: { children: ReactNode }) => {
   const setChainConnectedAccounts = useWalletsStore((state) => state.setChainConnectedAccounts);
   const setConnectedWallets = useWalletsStore((state) => state.setConnectedWallets);
   const setCurrentAccount = useWalletsStore((state) => state.setCurrentAccount);
+  const setCurrentAccountForChainType = useWalletsStore((state) => state.setCurrentAccountForChainType);
   const setCurrentWallet = useWalletsStore((state) => state.setCurrentWallet);
   const { network: currentSuiNetwork } = useSuiClientContext();
 
@@ -239,12 +240,19 @@ export const WalletsProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!currentWallet) {
       setCurrentAccount(undefined);
+      CHAIN_TYPES.forEach((chainType) => {
+        setCurrentAccountForChainType(chainType, undefined);
+      });
       return;
     }
 
+    const accountsForType = connectedAccountsByChain[currentWallet.type];
+    const connectedAccounts = Object.values(accountsForType);
+    if (connectedAccounts.length === 0) return;
+
     const [walletId, walletChainId] = currentWallet.id.split(':');
 
-    const currentAccount = Object.values(connectedAccountsByChain[currentWallet.type]).find((account) => {
+    const currentAccount = connectedAccounts.find((account) => {
       if (account.chainType === 'cosmos') {
         const [_accountWalletId, _accountChainId] = account.wallet.split(':');
         return _accountWalletId === walletId && (walletChainId ? _accountChainId === walletChainId : true);
@@ -253,28 +261,27 @@ export const WalletsProvider = ({ children }: { children: ReactNode }) => {
       return account.wallet === walletId;
     });
 
-    if (currentAccount) {
-      setCurrentAccount(currentAccount);
-    } else {
-      setCurrentAccount(undefined);
-      setCurrentWallet(undefined);
-    }
-  }, [currentWallet, setCurrentAccount, setCurrentWallet, connectedAccountsByChain]);
+    setCurrentAccount(currentAccount);
+    setCurrentAccountForChainType(currentWallet.type, currentAccount);
+    if (!currentAccount) setCurrentWallet(undefined);
+  }, [currentWallet, setCurrentAccount, setCurrentAccountForChainType, setCurrentWallet, connectedAccountsByChain]);
 
   // when connectedAccounts change, try connecting to recent wallet
   useEffect(() => {
     if (!recentWallet) return;
 
-    const connectedAccounts = connectedAccountsByChain[recentWallet.type];
-    if (!connectedAccounts) return;
+    const accountsForType = connectedAccountsByChain[recentWallet.type];
+    const connectedAccounts = Object.values(accountsForType);
+    if (connectedAccounts.length === 0) return;
 
-    const recentAccount = Object.values(connectedAccounts).find((account) => account.wallet === recentWallet.id);
+    const recentAccount = connectedAccounts.find((account) => account.wallet === recentWallet.id);
 
     if (recentAccount) {
       setCurrentWallet(recentWallet);
       setCurrentAccount(recentAccount);
+      setCurrentAccountForChainType(recentWallet.type, recentAccount);
     }
-  }, [recentWallet, setCurrentAccount, setCurrentWallet, connectedAccountsByChain]);
+  }, [recentWallet, connectedAccountsByChain, setCurrentWallet, setCurrentAccount, setCurrentAccountForChainType]);
 
   return <>{children}</>;
 };
