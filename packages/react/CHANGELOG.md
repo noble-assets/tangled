@@ -1,5 +1,13 @@
 # @tangled3/react
 
+## 1.0.8
+
+### Patch Changes
+
+- feat(wallet): add support for current account by chain type
+
+  Introduce a new hook useCurrentAccountForChainType to retrieve the current account based on the specified chain type. This enhances the wallet functionality by allowing users to access accounts specific to different chain types (e.g., EVM, Cosmos). The changes include updates to the store, provider, and example component to support this feature.
+
 ## 1.0.7
 
 ### Patch Changes
