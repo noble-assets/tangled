@@ -60,10 +60,12 @@ export const CosmosContextProvider = ({
 
   const connectedMainWallet = useStore(cosmosStore, (state) => state.connectedMainWallet);
   const chainRegistry = useStore(cosmosStore, (state) => state.chainRegistry);
+  const recentAdapterId = useStore(cosmosStore, (state) => state.recentAdapterId);
   const setConnectedMainWallet = useStore(cosmosStore, (state) => state.setConnectedMainWallet);
   const setChainWallets = useStore(cosmosStore, (state) => state.setChainWallets);
   const setWalletManager = useStore(cosmosStore, (state) => state.setWalletManager);
   const setWallets = useStore(cosmosStore, (state) => state.setWallets);
+  const setRecentAdapterId = useStore(cosmosStore, (state) => state.setRecentAdapterId);
   const getChainRegistry = useStore(cosmosStore, (state) => state.getChainRegistry);
   const reset = useStore(cosmosStore, (state) => state.reset);
 
@@ -200,11 +202,22 @@ export const CosmosContextProvider = ({
   );
 
   useEffect(() => {
-    walletManager.onMounted();
+    walletManager.onMounted().then(() => {
+      if (autoConnectRef.current && recentAdapterId) {
+        try {
+          connect({ adapterId: recentAdapterId });
+        } catch (e) {
+          setRecentAdapterId(undefined);
+        } finally {
+          autoConnectRef.current = false;
+        }
+      }
+    });
+
     return () => {
       walletManager.onUnmounted();
     };
-  }, [render, walletManager]);
+  }, [recentAdapterId, render, setRecentAdapterId, walletManager]);
 
   useEffect(() => {
     setWallets([...walletManager.mainWallets]);
@@ -243,6 +256,7 @@ export const CosmosContextProvider = ({
       await mainWallet.connectAll(false);
 
       const chainWallets = mainWallet.getChainWalletList(true);
+      setRecentAdapterId(adapterId);
       // @ts-expect-error: walletManager is not defined in the window object
       window.walletManager = walletManager;
       return { chainWallets, mainWallet, walletId, chainId };
@@ -257,24 +271,10 @@ export const CosmosContextProvider = ({
     mutationKey: ['cosmos disconnect'],
     mutationFn: async () => {
       await connectedMainWallet?.disconnectAll();
+      setRecentAdapterId(undefined);
       reset();
     },
   });
-
-  useEffect(() => {
-    const cosmosCurrentWallet = localStorage.getItem('cosmos-kit@2:core//current-wallet');
-    if (!autoConnectRef.current || !cosmosCurrentWallet) {
-      return;
-    }
-
-    if (clientState[cosmosCurrentWallet] !== State.Done) {
-      return;
-    }
-
-    connect({ adapterId: cosmosCurrentWallet });
-
-    autoConnectRef.current = false;
-  }, [walletManager, connect, clientState]);
 
   return (
     <CosmosContext.Provider

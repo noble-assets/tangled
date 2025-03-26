@@ -20,6 +20,7 @@ export const WalletsProvider = ({ children }: { children: ReactNode }) => {
   const { connections: solanaWallets, wallet: solConnectedWallet } = useSolanaWallet();
 
   // Cosmos store states
+  const recentAdapterId = useCosmosStore((state) => state.recentAdapterId);
   const cosmosChainWallets = useCosmosStore((state) => state.chainWallets);
 
   const bitcoinConnectors = useBitcoinStore((state) => state.connectors);
@@ -238,33 +239,55 @@ export const WalletsProvider = ({ children }: { children: ReactNode }) => {
   // ALL CHANGES ABOVE THIS BLOCK
   // when currentWallet changes, update currentAccount
   useEffect(() => {
+    CHAIN_TYPES.forEach((chainType) => {
+      const hasMatchingWallet = Object.values(connectedAccountsByChain[chainType]).some(
+        (account) => account.chainType === chainType,
+      );
+      if (!hasMatchingWallet) {
+        setCurrentAccountForChainType(chainType, undefined);
+      }
+    });
+
     if (!currentWallet) {
       setCurrentAccount(undefined);
-      CHAIN_TYPES.forEach((chainType) => {
-        setCurrentAccountForChainType(chainType, undefined);
-      });
       return;
     }
 
     const accountsForType = connectedAccountsByChain[currentWallet.type];
     const connectedAccounts = Object.values(accountsForType);
-    if (connectedAccounts.length === 0) return;
 
     const [walletId, walletChainId] = currentWallet.id.split(':');
 
-    const currentAccount = connectedAccounts.find((account) => {
-      if (account.chainType === 'cosmos') {
-        const [_accountWalletId, _accountChainId] = account.wallet.split(':');
-        return _accountWalletId === walletId && (walletChainId ? _accountChainId === walletChainId : true);
-      }
+    const getCurrentAccount = (id?: string) =>
+      connectedAccounts.find((account) => {
+        if (account.chainType === 'cosmos') {
+          const [_accountWalletId, _accountChainId] = account.wallet.split(':');
+          return _accountWalletId === walletId && (walletChainId ? _accountChainId === walletChainId : true);
+        }
 
-      return account.wallet === walletId;
-    });
+        return account.wallet === (id ?? walletId);
+      });
 
-    setCurrentAccount(currentAccount);
-    setCurrentAccountForChainType(currentWallet.type, currentAccount);
-    if (!currentAccount) setCurrentWallet(undefined);
-  }, [currentWallet, setCurrentAccount, setCurrentAccountForChainType, setCurrentWallet, connectedAccountsByChain]);
+    const currentAccount = getCurrentAccount();
+
+    if (!currentAccount && recentAdapterId) {
+      const currAcc = getCurrentAccount(recentAdapterId);
+      setCurrentAccount(currAcc);
+      setCurrentAccountForChainType(currentWallet.type, currAcc);
+    } else if (currentAccount) {
+      setCurrentAccount(currentAccount);
+      setCurrentAccountForChainType(currentWallet.type, currentAccount);
+    } else {
+      setCurrentWallet(undefined);
+    }
+  }, [
+    currentWallet,
+    recentAdapterId,
+    setCurrentAccount,
+    setCurrentAccountForChainType,
+    setCurrentWallet,
+    connectedAccountsByChain,
+  ]);
 
   // when connectedAccounts change, try connecting to recent wallet
   useEffect(() => {
