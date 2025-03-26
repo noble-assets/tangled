@@ -1,5 +1,13 @@
 # @tangled3/react
 
+## 1.0.9
+
+### Patch Changes
+
+- feat(cosmos): add recent adapter ID for auto-connect and persistence
+
+  Introduce recentAdapterId state to track the most recently used wallet adapter. This allows for auto-connect functionality and persists the adapter ID in localStorage for seamless reconnection across sessions. The changes also ensure proper handling of wallet disconnection and account updates based on the recent adapter ID.
+
 ## 1.0.8
 
 ### Patch Changes
