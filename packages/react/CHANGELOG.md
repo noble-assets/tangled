@@ -1,5 +1,11 @@
 # @tangled3/react
 
+## 1.0.11
+
+### Patch Changes
+
+- Remove redundant switchAminoForLedger function and directly check for Nano Ledger using activeAccount to improve code clarity and maintainability
+
 ## 1.0.10
 
 ### Patch Changes
