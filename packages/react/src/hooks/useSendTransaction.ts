@@ -13,8 +13,8 @@ export type SendTransactionMutationParams = Omit<SendTransactionParams<ChainData
  * @returns Mutation object
  */
 export const useSendTransaction = (
-  wallet: ReturnType<typeof useCurrentWallet>,
-  account: ReturnType<typeof useCurrentAccount>,
+  wallet?: ReturnType<typeof useCurrentWallet>,
+  account?: ReturnType<typeof useCurrentAccount>,
 ) => {
   const connectionOrConfig = useConnectionOrConfig();
 
