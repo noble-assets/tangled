@@ -1,5 +1,13 @@
 # @tangled3/react
 
+## 1.0.10
+
+### Patch Changes
+
+- refactor(useSendTransaction): allow passing wallet and account as parameters
+
+  This change modifies the `useSendTransaction` hook to accept `wallet` and `account` as optional parameters, providing flexibility for external usage. Default values are retained if parameters are not provided, ensuring backward compatibility.
+
 ## 1.0.9
 
 ### Patch Changes
