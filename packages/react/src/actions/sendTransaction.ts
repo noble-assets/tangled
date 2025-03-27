@@ -138,16 +138,10 @@ export const sendTransactionToChain = (async ({ chain, to, from, value, args, co
       throw new Error('Chain wallet not found for cosmos chain');
     }
 
-    const switchAminoForLedger = async () => {
-      if (window.keplr) {
-        const key = await window.keplr.getKey(chain.id);
-        if (key.isNanoLedger) {
-          chainWallet.preferredSignType = 'amino';
-        }
-      }
-    };
-
-    await switchAminoForLedger();
+    const activeAccount = await chainWallet.client.getAccount?.(chain.id);
+    if (activeAccount?.isNanoLedger) {
+      chainWallet.preferredSignType = 'amino';
+    }
 
     const { messages, memo } = args as TransactionArgs<'cosmos'>;
 
