@@ -12,10 +12,18 @@ export type SendTransactionMutationParams = Omit<SendTransactionParams<ChainData
  * Send transaction Hook
  * @returns Mutation object
  */
-export const useSendTransaction = () => {
+export const useSendTransaction = (
+  wallet: ReturnType<typeof useCurrentWallet>,
+  account: ReturnType<typeof useCurrentAccount>,
+) => {
   const connectionOrConfig = useConnectionOrConfig();
-  const currentWallet = useCurrentWallet();
-  const currentAccount = useCurrentAccount();
+
+  const defaultAccount = useCurrentAccount();
+  const currentAccount = account ?? defaultAccount;
+
+  const defaultWallet = useCurrentWallet();
+  const currentWallet = wallet ?? defaultWallet;
+
   const walletInstance = useWallet(currentWallet?.type, currentWallet?.id);
   const { network, switchNetworkAsync } = useNetwork();
 
